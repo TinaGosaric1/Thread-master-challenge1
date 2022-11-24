@@ -9,11 +9,15 @@ public class BankAccount {
         this.balance = initialBalance;
     }
 
-    public synchronized void deposit(double amount) {
+    public void deposit(double amount) {
+        synchronized (this) {
         balance += amount;
+        }
     }
 
-    public synchronized void withdraw(double amount) {
-        balance -= amount;
+    public void withdraw(double amount) {
+        synchronized (this) {
+            balance -= amount;
+        }
     }
 }
