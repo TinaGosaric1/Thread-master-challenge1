@@ -1,5 +1,6 @@
 package com.tg;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -15,20 +16,32 @@ public class BankAccount {
     }
 
     public void deposit(double amount) {
-        lock.lock();
         try {
-            balance += amount;
-        } finally { // we want to guarantee that we call the unlock() method
-            lock.unlock();
+            if (lock.tryLock(1000, TimeUnit.MILLISECONDS)) { // waiting for the lock for 1 second
+                try {
+                    balance += amount;
+                } finally {
+                    lock.unlock();
+                }
+            } else {
+                System.out.println("Could not get the lock in 1 second");
+            }
+        } catch (InterruptedException e) {
         }
     }
 
     public void withdraw(double amount) {
-        lock.lock();
         try {
-            balance -= amount;
-        } finally { // we want to guarantee that we call the unlock() method
-            lock.unlock();
+            if (lock.tryLock(1000, TimeUnit.MILLISECONDS)) { // waiting for the lock for 1 second
+                try {
+                    balance -= amount;
+                } finally {
+                    lock.unlock();
+                }
+            } else {
+                System.out.println("Could not get the lock in 1 second");
+            }
+        } catch (InterruptedException e) {
         }
     }
 
