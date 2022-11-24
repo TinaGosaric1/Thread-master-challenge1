@@ -16,10 +16,12 @@ public class BankAccount {
     }
 
     public void deposit(double amount) {
+        boolean status = false;
         try {
             if (lock.tryLock(1000, TimeUnit.MILLISECONDS)) { // waiting for the lock for 1 second
                 try {
                     balance += amount;
+                    status = true;
                 } finally {
                     lock.unlock();
                 }
@@ -28,13 +30,16 @@ public class BankAccount {
             }
         } catch (InterruptedException e) {
         }
+        System.out.println("Deposit status = " + status);
     }
 
     public void withdraw(double amount) {
+        boolean status = false;
         try {
             if (lock.tryLock(1000, TimeUnit.MILLISECONDS)) { // waiting for the lock for 1 second
                 try {
                     balance -= amount;
+                    status = true;
                 } finally {
                     lock.unlock();
                 }
@@ -43,6 +48,7 @@ public class BankAccount {
             }
         } catch (InterruptedException e) {
         }
+        System.out.println("Withdraw status = " + status);
     }
 
     public String getAccountNumber() {
