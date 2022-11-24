@@ -16,7 +16,7 @@ public class BankAccount {
     }
 
     public void deposit(double amount) {
-        boolean status = false;
+        boolean status = false; // local variables are already threadsafe
         try {
             if (lock.tryLock(1000, TimeUnit.MILLISECONDS)) { // waiting for the lock for 1 second
                 try {
@@ -34,7 +34,7 @@ public class BankAccount {
     }
 
     public void withdraw(double amount) {
-        boolean status = false;
+        boolean status = false; // local variables are already threadsafe
         try {
             if (lock.tryLock(1000, TimeUnit.MILLISECONDS)) { // waiting for the lock for 1 second
                 try {
