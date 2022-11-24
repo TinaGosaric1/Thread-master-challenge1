@@ -1,61 +1,68 @@
 package com.tg;
 
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class BankAccount {
+class BankAccount {
     private double balance;
     private String accountNumber;
-    private Lock lock;
+    private Lock lock = new ReentrantLock();
 
-    public BankAccount(String accountNumber, double initialBalance) {
+    BankAccount(String accountNumber, double balance) {
         this.accountNumber = accountNumber;
-        this.balance = initialBalance;
-        this.lock = new ReentrantLock(); // don't forget to create the lock instance in the constructor
+        this.balance = balance;
     }
 
-    public void deposit(double amount) {
-        boolean status = false; // local variables are already threadsafe
-        try {
-            if (lock.tryLock(1000, TimeUnit.MILLISECONDS)) { // waiting for the lock for 1 second
+    public boolean withdraw(double amount) {
+        if (lock.tryLock()) {
+            try {
                 try {
-                    balance += amount;
-                    status = true;
-                } finally {
-                    lock.unlock();
+                    // Simulate database access
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
                 }
-            } else {
-                System.out.println("Could not get the lock in 1 second");
+                balance -= amount;
+                System.out.printf("%s: Withdrew %f\n", Thread.currentThread().getName(), amount);
+                return true;
+
+            } finally {
+                lock.unlock();
             }
-        } catch (InterruptedException e) {
         }
-        System.out.println("Deposit status = " + status);
+        return false;
     }
 
-    public void withdraw(double amount) {
-        boolean status = false; // local variables are already threadsafe
-        try {
-            if (lock.tryLock(1000, TimeUnit.MILLISECONDS)) { // waiting for the lock for 1 second
+    public boolean deposit(double amount) {
+        if (lock.tryLock()) {
+            try {
                 try {
-                    balance -= amount;
-                    status = true;
-                } finally {
-                    lock.unlock();
+                    // Simulate database access
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
                 }
-            } else {
-                System.out.println("Could not get the lock in 1 second");
+                balance += amount;
+                System.out.printf("%s: Deposited %f\n", Thread.currentThread().getName(), amount);
+                return true;
+
+            } finally {
+                lock.unlock();
             }
-        } catch (InterruptedException e) {
         }
-        System.out.println("Withdraw status = " + status);
+        return false;
     }
 
-    public String getAccountNumber() {
-        return accountNumber; // no need to synchronize
-    }
+    public boolean transfer(BankAccount destinationAccount, double amount) {
+        if (withdraw(amount)) {
+            if (destinationAccount.deposit(amount)) {
+                return true;
+            } else {
+                // The deposit failed. Refund the money back into the account.
+                System.out.printf("%s: Destination account busy. Refunding money\n",
+                        Thread.currentThread().getName());
+                deposit(amount);
+            }
+        }
 
-    public void printAccountNumber() {
-        System.out.println("Account number = " + accountNumber); // no need to synchronize
+        return false;
     }
 }
